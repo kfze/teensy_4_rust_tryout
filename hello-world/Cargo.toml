@@ -1,0 +1,33 @@
+[package]
+name = "hello-world"
+version = "0.1.0"
+authors = ["kfze <kelvinfze@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+cortex-m = "0.7.3"
+cortex-m-rt = "0.6.14"
+embedded-hal = "0.2.5"
+# Remove me if you don't want logging
+log = "0.4.11"
+teensy4-panic = "0.2.0"
+teensy4-fcb = "0.3.0"
+heapless = "0.7.3"
+
+[dependencies.imxrt-hal]
+version = "0.4.2"
+features = ["imxrt1062"]
+
+[dependencies.teensy4-pins]
+version = "0.1"
+[dev-dependencies.panic-halt]
+version = "0.2.0"
+
+[dependencies.teensy4-bsp]
+version = "0.2"
+features = ["rt"]
+
+# Don't optimize build dependencies, like proc macros.
+# Helps with build times.
+[profile.release.build-override]
+opt-level = 0
