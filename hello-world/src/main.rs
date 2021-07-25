@@ -56,7 +56,7 @@ fn main() -> ! {
     systick.delay(1000);
     info!("starting led_display");
     led_display.begin(&mut systick);
-    led_display.set_brightness(2, &mut systick);
+    led_display.set_brightness(2);
     led_display.home();
     //let mut led_direction = true;
 
@@ -78,7 +78,7 @@ fn main() -> ! {
         let s: String<16> = String::from(reading_a1);
         // led_display.set_string(&s);
         // led_display.scroll(true, &mut systick);
-        led_display.show_display_length_worth(&s, &mut systick);
+        led_display.show_display_length_worth(&s);
         if reading_a1 > 100 {
             led.set();
         }

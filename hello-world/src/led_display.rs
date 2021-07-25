@@ -105,13 +105,13 @@ Hcms<DataPin, RegisterSelectPin, ClockPin, EnablePin, ResetPin>
         self.clock_pin.set_low().ok();
 
         // load dot register with lows
-        self.load_dot_register(systick);
+        self.load_dot_register();
         
         // set control register 0 for max brightness, and no sleep:
-        self.load_all_control_registers(0b01111111,systick);
+        self.load_all_control_registers(0b01111111);
     }
 
-    pub fn load_dot_register(&mut self, systick: &mut bsp::SysTick,)
+    pub fn load_dot_register(&mut self)
     { 
         let max_data = self.display_length * 5;
 
@@ -124,14 +124,14 @@ Hcms<DataPin, RegisterSelectPin, ClockPin, EnablePin, ResetPin>
         {
             //info!("shifting out");
             //shiftOut(dataPin, clockPin, MSBFIRST, dotRegister[i]);
-            self.shift_out(self.dot_register[number as usize], systick);
+            self.shift_out(self.dot_register[number as usize]);
         }
             
         self.enable_pin.set_high().ok();
     }
 
     // /To shift out bits
-    pub fn shift_out(&mut self, value: u8, systick: &mut bsp::SysTick,)
+    pub fn shift_out(&mut self, value: u8)
     {
         //let value = self.dotRegister[charNum];
         for i in 0..8
@@ -150,7 +150,7 @@ Hcms<DataPin, RegisterSelectPin, ClockPin, EnablePin, ResetPin>
     }
 
     // This method sends 8 bits to the control registers in all chips:
-    pub fn load_all_control_registers(&mut self, data_byte: u8, systick: &mut bsp::SysTick)
+    pub fn load_all_control_registers(&mut self, data_byte: u8)
     {
         // Each display can have more than one control chip, and displays
         // can be daisy-chained into long strings. For some operations, such
@@ -169,31 +169,31 @@ Hcms<DataPin, RegisterSelectPin, ClockPin, EnablePin, ResetPin>
         // it into simultaneous mode (seriel mode is the power-up default).
         for _i in 0..chip_count
         {
-            self.load_control_registers(0b1000_0001, systick);
+            self.load_control_registers(0b1000_0001);
         }
 
         // Load the specified value into the control register.
-        self.load_control_registers(data_byte,systick);
+        self.load_control_registers(data_byte);
 
         // Put all the chips back into serial mode. Because they're still
         // all in simultaneous mode, we only have to write this word once.
-        self.load_control_registers(0b1000_0000,systick);
+        self.load_control_registers(0b1000_0000);
     }
 
     // This method sends 8 bits to one of the control registers:
-    fn load_control_registers(&mut self, data_byte: u8, systick: &mut bsp::SysTick)
+    fn load_control_registers(&mut self, data_byte: u8)
     {
         // select the control registers:
         self.register_select.set_high().ok();
         // enable writing to the display:
         self.enable_pin.set_low().ok();
         // shift the data out:
-        self.shift_out(data_byte, systick);
+        self.shift_out(data_byte);
         // disable writing:
         self.enable_pin.set_high().ok();
     }
 
-    pub fn clear(&mut self, systick: &mut bsp::SysTick)
+    pub fn clear(&mut self)
     {
         self.string_buffer = [b' ' as u8; (LEDDISPLAY_MAXCHARS + 5) as usize];
         for display_pos in 0..self.display_length
@@ -201,7 +201,7 @@ Hcms<DataPin, RegisterSelectPin, ClockPin, EnablePin, ResetPin>
             self.write_character(' ', display_pos as i8);
         }
 
-        self.load_dot_register(systick);
+        self.load_dot_register();
     }
 
 
@@ -236,7 +236,7 @@ Hcms<DataPin, RegisterSelectPin, ClockPin, EnablePin, ResetPin>
         self.cursor_pos = which_position;
     }
 
-    pub fn write(&mut self, byte: char, systick: &mut bsp::SysTick)
+    pub fn write(&mut self, byte: char)
     {
         // make sure cursorPos is on the display:
         if self.cursor_pos >= 0 && self.cursor_pos < self.display_length as i8
@@ -253,11 +253,11 @@ Hcms<DataPin, RegisterSelectPin, ClockPin, EnablePin, ResetPin>
             }
             self.cursor_pos += 1 ;
 
-            self.load_dot_register(systick);
+            self.load_dot_register();
         }
     }
 
-    pub fn set_brightness(&mut self, bright: u8, systick: &mut bsp::SysTick) 
+    pub fn set_brightness(&mut self, bright: u8) 
     {
         info!("set led display brightness to {}", bright);
         // Limit the brightness
@@ -268,7 +268,7 @@ Hcms<DataPin, RegisterSelectPin, ClockPin, EnablePin, ResetPin>
         }
         // set the brightness:
         //info!("seting brightness to {} with byte value {}",brightness, 0b01110000 + brightness);
-        self.load_all_control_registers(0b01110000 + brightness, systick);
+        self.load_all_control_registers(0b01110000 + brightness);
     }
 
     pub fn set_string(&mut self, string_to_show: &str)
@@ -306,7 +306,7 @@ Hcms<DataPin, RegisterSelectPin, ClockPin, EnablePin, ResetPin>
     }
 
     // Scroll the displayString across the display.  left = -1, right = +1
-    pub fn scroll(&mut self, direction: bool, systick: &mut bsp::SysTick)
+    pub fn scroll(&mut self, direction: bool)
     {
         if direction{
             self.cursor_pos += 1;
@@ -337,7 +337,7 @@ Hcms<DataPin, RegisterSelectPin, ClockPin, EnablePin, ResetPin>
             self.write_character(char_to_show, display_pos as i8);
         }
 
-        self.load_dot_register(systick);
+        self.load_dot_register();
     }
 
     pub fn get_cursor(&mut self) -> i8
@@ -345,7 +345,7 @@ Hcms<DataPin, RegisterSelectPin, ClockPin, EnablePin, ResetPin>
         self.cursor_pos
     }
 
-    pub fn show_display_length_worth(&mut self, string_to_show: &str, systick: &mut bsp::SysTick)
+    pub fn show_display_length_worth(&mut self, string_to_show: &str)
     {
         self.set_string(string_to_show);
         //  length of the string to display:
@@ -371,7 +371,7 @@ Hcms<DataPin, RegisterSelectPin, ClockPin, EnablePin, ResetPin>
             self.write_character(char_to_show, display_pos as i8);
         }
 
-        self.load_dot_register(systick);
+        self.load_dot_register();
     }
 }
 
